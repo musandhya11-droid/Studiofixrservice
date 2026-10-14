@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ta" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineSync - Film Production & Call Sheet Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-12">
+
+    <!-- Top Navigation Bar -->
+    <nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-clapperboard text-amber-500 text-2xl"></i>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wider text-white">CINESYNC <span class="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded border border-amber-500/30">PRO</span></h1>
+                    <p class="text-xs text-slate-400">Production & Artist Schedule Manager</p>
+                </div>
+            </div>
+
+            <!-- Role Switcher (AD vs Actor) -->
+            <div class="flex bg-slate-800 p-1 rounded-lg border border-slate-700">
+                <button onclick="switchRole('ad')" id="btn-ad" class="px-4 py-1.5 rounded-md text-sm font-medium bg-amber-500 text-slate-950 transition">
+                    <i class="fa-solid fa-bullhorn mr-1"></i> Director / AD View
+                </button>
+                <button onclick="switchRole('actor')" id="btn-actor" class="px-4 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:text-white transition">
+                    <i class="fa-solid fa-user-astronaut mr-1"></i> Actor Portal (நடிகர்)
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 mt-6">
+
+        <!-- ==================== 1. DIRECTOR / AD VIEW ==================== -->
+        <div id="ad-view" class="space-y-6">
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <p class="text-slate-400 text-xs">Project Name</p>
+                    <p class="text-lg font-bold text-white mt-1">Production #1 (Sci-Fi)</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <p class="text-slate-400 text-xs">Scenes Completed</p>
+                    <p class="text-lg font-bold text-emerald-400 mt-1">18 / 45 Scenes</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <p class="text-slate-400 text-xs">Next Shoot Weather</p>
+                    <p class="text-lg font-bold text-sky-400 mt-1"><i class="fa-solid fa-cloud-sun mr-1"></i> Clear (Golden Hr: 5:45 PM)</p>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <p class="text-slate-400 text-xs">Schedule Status</p>
+                    <p class="text-lg font-bold text-amber-400 mt-1">Schedule 2 Ongoing</p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-12 gap-6">
+                
+                <!-- Left Column: Combination Scene Date Finder -->
+                <div class="md:col-span-5 bg-slate-900 border border-slate-800 rounded-xl p-5">
+                    <h2 class="text-lg font-bold text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-check"></i> காமினேஷன் தேதி கண்டுபிடி (Combo Finder)
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1 mb-4">நடிகர்களைத் தேர்வு செய்தால், அனைவரும் ஃப்ரீயாக இருக்கும் பொதுவான தேதிகளைக் காட்டும்.</p>
+
+                    <div class="space-y-2 mb-5" id="actor-checkboxes">
+                        <!-- Rendered via JS -->
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-4">
+                        <h3 class="text-sm font-semibold text-slate-300 mb-3">பொதுவான ஃப்ரீ தேதிகள் (Oct 2026 - Days 1 to 15):</h3>
+                        <div id="common-dates-result" class="flex flex-wrap gap-2">
+                            <!-- Rendered via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Daily Call Sheet Generator -->
+                <div class="md:col-span-7 bg-slate-900 border border-slate-800 rounded-xl p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-clipboard-list text-amber-500"></i> Daily Call Sheet (தினசரி கால் ஷீட்)
+                            </h2>
+                            <p class="text-xs text-slate-400">Date: Oct 15, 2026 | Location: EVP Film City, Chennai</p>
+                        </div>
+                        <button onclick="broadcastWhatsApp()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition">
+                            <i class="fa-brands fa-whatsapp text-base"></i> Broadcast Alert
+                        </button>
+                    </div>
+
+                    <!-- Add Scene Form -->
+                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 mb-4 grid grid-cols-1 sm:grid-cols-4 gap-2">
+                        <input id="inp-scene" type="text" placeholder="Scene No (e.g. Sc 24)" class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-sm text-white">
+                        <select id="inp-time" class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-sm text-white">
+                            <option value="DAY / INT">DAY / INT (பகல்/உள்)</option>
+                            <option value="DAY / EXT">DAY / EXT (பகல்/வெளி)</option>
+                            <option value="NIGHT / EXT">NIGHT / EXT (இரவு/வெளி)</option>
+                        </select>
+                        <input id="inp-cast" type="text" placeholder="Artists (e.g. Karthik, Priya)" class="bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-sm text-white">
+                        <button onclick="addScene()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded text-sm py-1.5 transition">+ Add Scene</button>
+                    </div>
+
+                    <!-- Call Sheet Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-xs text-slate-400">
+                                    <th class="py-2 px-3">Scene</th>
+                                    <th class="py-2 px-3">Shift</th>
+                                    <th class="py-2 px-3">Cast Required</th>
+                                    <th class="py-2 px-3">Call Time</th>
+                                    <th class="py-2 px-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="callsheet-body" class="text-sm divide-y divide-slate-800/60">
+                                <!-- Rendered via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==================== 2. ACTOR / TALENT PORTAL ==================== -->
+        <div id="actor-view" class="hidden space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-amber-400">நடிகர் காலண்டர் (Artist Self-Schedule Portal)</h2>
+                        <p class="text-xs text-slate-400">உங்கள் தேதிகளை க்ளிக் செய்து Available (பச்சை) அல்லது Busy (சிவப்பு) என மாற்றவும். இது உடனே இயக்குநர் டீமிற்கு அப்டேட் ஆகும்.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-400">Select Artist Profile:</span>
+                        <select id="actor-selector" onchange="renderActorCalendar()" class="bg-slate-800 border border-slate-700 text-white text-sm rounded-lg px-3 py-1.5 font-semibold">
+                            <!-- Rendered via JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="flex gap-4 mb-4 text-xs">
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Available for Shoot</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span> Busy / Other Movie (Blocked)</span>
+                </div>
+
+                <!-- 15 Day Interactive Grid -->
+                <div id="actor-calendar-grid" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-5 gap-3">
+                    <!-- Rendered via JS -->
+                </div>
+
+                <div class="mt-6 bg-slate-950 border border-slate-800 p-4 rounded-lg flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-lock text-amber-500 text-lg"></i>
+                        <div>
+                            <p class="text-sm font-semibold text-white">Privacy Protection Active</p>
+                            <p class="text-xs text-slate-400">நீங்கள் 'Busy' என மார்க் செய்யும் தேதிகளில் உங்கள் தனிப்பட்ட விவரங்கள் இயக்குநருக்குக் காட்டப்படாது.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. SAMPLE DATA (State) ---
+        const actors = [
+            { id: 1, name: "கார்த்திக் (Hero)", role: "Lead Actor", freeDays: [1, 2, 3, 5, 6, 8, 9, 10, 12, 14, 15] },
+            { id: 2, name: "பிரியா (Heroine)", role: "Lead Actress", freeDays: [2, 3, 4, 5, 7, 8, 10, 11, 14, 15] },
+            { id: 3, name: "பிரகாஷ் (Villain)", role: "Antagonist", freeDays: [1, 3, 5, 6, 8, 10, 13, 15] },
+            { id: 4, name: "பாலா (DOP - Cameraman)", role: "Cinematographer", freeDays: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15] }
+        ];
+
+        const scenes = [
+            { scene: "Sc 12", shift: "DAY / INT", cast: "கார்த்திக், பிரியா", time: "07:00 AM", status: "Completed" },
+            { scene: "Sc 15", shift: "DAY / EXT", cast: "கார்த்திக், பிரகாஷ்", time: "11:30 AM", status: "Shooting Now" },
+            { scene: "Sc 19", shift: "NIGHT / EXT", cast: "பிரியா, பிரகாஷ்", time: "06:30 PM", status: "Pending" }
+        ];
+
+        let selectedActorsForCombo = [1, 2, 3]; // Default checked
+
+        // --- 2. ROLE SWITCHER ---
+        function switchRole(role) {
+            const adView = document.getElementById('ad-view');
+            const actorView = document.getElementById('actor-view');
+            const btnAd = document.getElementById('btn-ad');
+            const btnActor = document.getElementById('btn-actor');
+
+            if (role === 'ad') {
+                adView.classList.remove('hidden');
+                actorView.classList.add('hidden');
+                btnAd.className = "px-4 py-1.5 rounded-md text-sm font-medium bg-amber-500 text-slate-950 transition";
+                btnActor.className = "px-4 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:text-white transition";
+                renderComboFinder();
+            } else {
+                adView.classList.add('hidden');
+                actorView.classList.remove('hidden');
+                btnActor.className = "px-4 py-1.5 rounded-md text-sm font-medium bg-amber-500 text-slate-950 transition";
+                btnAd.className = "px-4 py-1.5 rounded-md text-sm font-medium text-slate-300 hover:text-white transition";
+                renderActorCalendar();
+            }
+        }
+
+        // --- 3. COMBO DATE FINDER LOGIC ---
+        function renderComboFinder() {
+            const container = document.getElementById('actor-checkboxes');
+            container.innerHTML = '';
+
+            actors.forEach(actor => {
+                const isChecked = selectedActorsForCombo.includes(actor.id) ? 'checked' : '';
+                container.innerHTML += `
+                    <label class="flex items-center justify-between bg-slate-950 px-3 py-2 rounded-lg border border-slate-800 cursor-pointer hover:border-slate-700">
+                        <div class="flex items-center gap-2.5">
+                            <input type="checkbox" ${isChecked} onchange="toggleActorCombo(${actor.id})" class="w-4 h-4 accent-amber-500 rounded">
+                            <span class="text-sm font-medium text-white">${actor.name}</span>
+                        </div>
+                        <span class="text-xs text-slate-400">${actor.freeDays.length} days free</span>
+                    </label>
+                `;
+            });
+
+            calculateCommonDates();
+        }
+
+        function toggleActorCombo(id) {
+            if (selectedActorsForCombo.includes(id)) {
+                selectedActorsForCombo = selectedActorsForCombo.filter(item => item !== id);
+            } else {
+                selectedActorsForCombo.push(id);
+            }
+            calculateCommonDates();
+        }
+
+        function calculateCommonDates() {
+            const resultDiv = document.getElementById('common-dates-result');
+            resultDiv.innerHTML = '';
+
+            if (selectedActorsForCombo.length === 0) {
+                resultDiv.innerHTML = `<span class="text-xs text-slate-500">குறைந்தது ஒரு நடிகரையாவது தேர்வு செய்யவும்.</span>`;
+                return;
+            }
+
+            const chosenActors = actors.filter(a => selectedActorsForCombo.includes(a.id));
+            let commonDays = [];
+
+            for (let day = 1; day <= 15; day++) {
+                const allFree = chosenActors.every(actor => actor.freeDays.includes(day));
+                if (allFree) commonDays.push(day);
+            }
+
+            if (commonDays.length === 0) {
+                resultDiv.innerHTML = `<div class="bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs p-3 rounded-lg w-full">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> <b>Date Clash!</b> தேர்வு செய்யப்பட்ட அனைவரும் ஒரே நாளில் ஃப்ரீயாக இல்லை.
+                </div>`;
+            } else {
+                commonDays.forEach(day => {
+                    resultDiv.innerHTML += `
+                        <div class="bg-emerald-500/10 border border-emerald-500/40 text-emerald-300 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
+                            <i class="fa-regular fa-calendar-check"></i> Oct ${day}
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        // --- 4. CALL SHEET TABLE ---
+        function renderCallSheet() {
+            const tbody = document.getElementById('callsheet-body');
+            tbody.innerHTML = '';
+
+            scenes.forEach((s, index) => {
+                let badgeColor = s.status === 'Completed' ? 'bg-emerald-500/20 text-emerald-400' :
+                                 s.status === 'Shooting Now' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-800 text-slate-300';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-950/60">
+                        <td class="py-2.5 px-3 font-bold text-amber-400">${s.scene}</td>
+                        <td class="py-2.5 px-3 text-xs text-slate-300">${s.shift}</td>
+                        <td class="py-2.5 px-3 text-slate-200">${s.cast}</td>
+                        <td class="py-2.5 px-3 text-xs font-mono text-sky-400">${s.time}</td>
+                        <td class="py-2.5 px-3">
+                            <span class="px-2 py-0.5 rounded text-xs font-medium ${badgeColor}">${s.status}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function addScene() {
+            const sc = document.getElementById('inp-scene').value.trim();
+            const shift = document.getElementById('inp-time').value;
+            const cast = document.getElementById('inp-cast').value.trim();
+
+            if (!sc || !cast) {
+                alert("Scene நம்பர் மற்றும் நடிகர்கள் பெயரை உள்ளிடவும்!");
+                return;
+            }
+
+            scenes.push({ scene: sc, shift: shift, cast: cast, time: "09:00 AM", status: "Scheduled" });
+            document.getElementById('inp-scene').value = '';
+            document.getElementById('inp-cast').value = '';
+            renderCallSheet();
+        }
+
+        function broadcastWhatsApp() {
+            alert("✅ WhatsApp Broadcast Sent!\n\nபடக்குழு அனைவருக்கும் அன்றைய கால் ஷீட் மற்றும் லொகேஷன் மேப் வாட்ஸ்அப்பில் அனுப்பப்பட்டது.");
+        }
+
+        // --- 5. ACTOR PORTAL CALENDAR ---
+        function initActorSelector() {
+            const sel = document.getElementById('actor-selector');
+            sel.innerHTML = '';
+            actors.forEach(a => {
+                sel.innerHTML += `<option value="${a.id}">${a.name}</option>`;
+            });
+        }
+
+        function renderActorCalendar() {
+            const actorId = parseInt(document.getElementById('actor-selector').value);
+            const actor = actors.find(a => a.id === actorId);
+            const grid = document.getElementById('actor-calendar-grid');
+            grid.innerHTML = '';
+
+            for (let day = 1; day <= 15; day++) {
+                const isFree = actor.freeDays.includes(day);
+                const bgClass = isFree 
+                    ? "bg-emerald-950/60 border-emerald-500/40 hover:border-emerald-400 text-emerald-300" 
+                    : "bg-rose-950/60 border-rose-500/40 hover:border-rose-400 text-rose-300";
+                const statusText = isFree ? "Available" : "Busy / Blocked";
+                const icon = isFree ? "fa-check-circle text-emerald-400" : "fa-ban text-rose-400";
+
+                grid.innerHTML += `
+                    <div onclick="toggleActorDay(${actor.id}, ${day})" class="border ${bgClass} p-3 rounded-xl cursor-pointer transition select-none flex flex-col justify-between h-24">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold text-white">Oct ${day}</span>
+                            <i class="fa-solid ${icon}"></i>
+                        </div>
+                        <div class="text-xs font-medium mt-2">${statusText}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function toggleActorDay(actorId, day) {
+            const actor = actors.find(a => a.id === actorId);
+            if (actor.freeDays.includes(day)) {
+                actor.freeDays = actor.freeDays.filter(d => d !== day);
+            } else {
+                actor.freeDays.push(day);
+                actor.freeDays.sort((a, b) => a - b);
+            }
+            renderActorCalendar();
+        }
+
+        // Initialize App on Load
+        initActorSelector();
+        renderComboFinder();
+        renderCallSheet();
+    </script>
+</body>
+</html>
